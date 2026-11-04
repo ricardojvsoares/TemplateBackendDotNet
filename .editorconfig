@@ -396,3 +396,9 @@ dotnet_diagnostic.CA2000.severity = none
 
 # CA1724: Type names should not match namespaces
 dotnet_diagnostic.CA1724.severity = none
+
+# CA1848: Use the LoggerMessage delegates
+dotnet_diagnostic.CA1848.severity = none
+
+# CA1031: Do not catch general exception types
+dotnet_diagnostic.CA1031.severity = none

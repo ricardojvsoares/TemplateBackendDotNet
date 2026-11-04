@@ -5,6 +5,7 @@
   <ItemGroup>
     <PackageVersion Include="Asp.Versioning.Http" Version="10.2.3" />
     <PackageVersion Include="Carter" Version="10.0.0" />
+    <PackageVersion Include="Dapper" Version="2.1.89" />
     <PackageVersion Include="ErrorOr" Version="2.1.1" />
     <PackageVersion Include="Microsoft.AspNetCore.OpenApi" Version="10.0.14" />
     <PackageVersion Include="Microsoft.Extensions.Configuration" Version="10.0.14" />
