@@ -15,6 +15,7 @@
     <PackageVersion Include="Scalar.AspNetCore" Version="2.18.7" />
     <PackageVersion Include="Scrutor" Version="7.0.0" />
     <PackageVersion Include="Serilog.AspNetCore" Version="10.0.0" />
+    <PackageVersion Include="WolverineFx" Version="6.61.0" />
   </ItemGroup>
   <ItemGroup>
     <GlobalPackageReference Include="SonarAnalyzer.CSharp" Version="10.21.0.135717">
