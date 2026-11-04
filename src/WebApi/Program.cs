@@ -3,6 +3,7 @@ using Persistence;
 using Application;
 using Serilog;
 using Scalar.AspNetCore;
+using Carter;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -19,6 +20,8 @@ builder.Services
     .AddPersistence()
     .AddApplication();
 
+builder.Services.AddCarter();
+
 var app = builder.Build();
 
 if (app.Environment.IsDevelopment())
@@ -33,5 +36,7 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
+
+app.MapCarter();
 
 await app.RunAsync();
