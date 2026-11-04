@@ -7,7 +7,21 @@
       "launchBrowser": false,
       "applicationUrl": "http://localhost:5257",
       "environmentVariables": {
-        "ASPNETCORE_ENVIRONMENT": "Development"
+        "ASPNETCORE_ENVIRONMENT": "Development",
+        "STORAGE_ENDPOINT": "",
+        "STORAGE_ACCESS_KEY": "",
+        "STORAGE_SECRET_KEY": "",
+        "STORAGE_BUCKET": "",
+        "STORAGE_REGION": "",
+        "POSTGRES_HOST": "",
+        "POSTGRES_PORT": "",
+        "POSTGRES_DATABASE": "",
+        "POSTGRES_USERNAME": "",
+        "POSTGRES_PASSWORD": "",
+        "RABBITMQ_HOST": "",
+        "RABBITMQ_PORT": "",
+        "RABBITMQ_USERNAME": "",
+        "RABBITMQ_PASSWORD": ""
       }
     },
     "https": {
@@ -16,7 +30,21 @@
       "launchBrowser": false,
       "applicationUrl": "https://localhost:7279;http://localhost:5257",
       "environmentVariables": {
-        "ASPNETCORE_ENVIRONMENT": "Development"
+        "ASPNETCORE_ENVIRONMENT": "Development",
+        "STORAGE_ENDPOINT": "",
+        "STORAGE_ACCESS_KEY": "",
+        "STORAGE_SECRET_KEY": "",
+        "STORAGE_BUCKET": "",
+        "STORAGE_REGION": "",
+        "POSTGRES_HOST": "",
+        "POSTGRES_PORT": "",
+        "POSTGRES_DATABASE": "",
+        "POSTGRES_USERNAME": "",
+        "POSTGRES_PASSWORD": "",
+        "RABBITMQ_HOST": "",
+        "RABBITMQ_PORT": "",
+        "RABBITMQ_USERNAME": "",
+        "RABBITMQ_PASSWORD": ""
       }
     }
   }
