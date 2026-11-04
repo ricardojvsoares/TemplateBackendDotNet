@@ -14,7 +14,6 @@ public class User : Entity
         string firstName,
         string lastName,
         string email,
-        string externalId,
         Guid createdBy)
 
     {
@@ -23,7 +22,6 @@ public class User : Entity
             FirstName = firstName,
             LastName = lastName,
             Email = email,
-            ExternalId = externalId,
             CreatedBy = createdBy
         };
     }
