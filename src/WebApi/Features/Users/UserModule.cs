@@ -4,7 +4,7 @@ using WebApi.Features.Users.Endpoints;
 
 namespace WebApi.Features.Users;
 
-internal sealed class UserModule : ICarterModule
+public sealed class UserModule : ICarterModule
 {
     private const string RoutePrefix = "users";
 

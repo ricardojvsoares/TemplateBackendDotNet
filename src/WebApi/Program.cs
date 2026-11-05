@@ -1,3 +1,4 @@
+using Asp.Versioning;
 using Infrastructure;
 using Persistence;
 using Application;
@@ -7,7 +8,21 @@ using Carter;
 
 var builder = WebApplication.CreateBuilder(args);
 
-builder.Services.AddOpenApi();
+
+builder.Services
+    .AddApiVersioning(options =>
+    {
+        options.DefaultApiVersion = ApiVersion.Default;
+        options.ApiVersionReader = new UrlSegmentApiVersionReader();
+        options.AssumeDefaultVersionWhenUnspecified = true;
+    })
+    .AddApiExplorer(options =>
+    {
+        options.GroupNameFormat = "'v'VVV";
+        options.SubstituteApiVersionInUrl = true;
+    })
+    .AddOpenApi();
+
 
 
 builder.Host.UseSerilog(
@@ -28,7 +43,7 @@ var app = builder.Build();
 
 if (app.Environment.IsDevelopment())
 {
-    app.MapOpenApi();
+    app.MapOpenApi().WithDocumentPerVersion();
 
     app.MapScalarApiReference("/docs", options =>
     {

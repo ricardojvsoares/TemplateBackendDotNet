@@ -8,5 +8,6 @@
     <PackageReference Include="Microsoft.Extensions.Options" />
     <PackageReference Include="Scrutor" />
     <PackageReference Include="WolverineFx" />
+    <PackageReference Include="WolverineFx.RuntimeCompilation" />
   </ItemGroup>
 </Project>

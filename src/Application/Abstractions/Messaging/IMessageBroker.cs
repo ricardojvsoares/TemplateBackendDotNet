@@ -6,4 +6,10 @@ public interface IMessageBroker
         T message,
         Guid senderId,
         CancellationToken cancellationToken);
+    Task SubscribeAsync<T>(
+        Func<T, CancellationToken, Task> handler,
+        CancellationToken cancellationToken);
+    Task UnsubscribeAsync<T>(
+        Func<T, CancellationToken, Task> handler,
+        CancellationToken cancellationToken);
 }
