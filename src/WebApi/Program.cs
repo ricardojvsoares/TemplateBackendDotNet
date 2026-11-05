@@ -16,9 +16,9 @@ builder.Host.UseSerilog(
             context.Configuration));
 
 builder.Services
+    .AddApplication()
     .AddInfrastructure()
-    .AddPersistence()
-    .AddApplication();
+    .AddPersistence();
 
 builder.Services.AddCarter();
 
