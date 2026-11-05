@@ -6,9 +6,9 @@ public sealed class KeycloakClient
     public string ClientId { get; set; } = string.Empty;
     public string Name { get; set; } = string.Empty;
     public string Description { get; set; } = string.Empty;
-    public Uri RootUrl { get; set; } = null!;
-    public Uri AdminUrl { get; set; } = null!;
-    public Uri BaseUrl { get; set; } = null!;
+    public string? RootUrl { get; set; }
+    public string? AdminUrl { get; set; }
+    public string? BaseUrl { get; set; }
     public bool Enabled { get; set; }
     public string ClientAuthenticatorType { get; set; } = string.Empty;
 }

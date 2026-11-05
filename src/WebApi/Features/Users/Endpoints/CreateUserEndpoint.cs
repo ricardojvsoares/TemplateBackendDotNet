@@ -32,6 +32,7 @@ internal static class CreateUserEndpoint
             .WithSummary("Create User")
             .WithName("CreateUser")
             .Produces<CreateUserResponse>(StatusCodes.Status201Created)
-            .ProducesValidationProblem();
+            .ProducesValidationProblem()
+            .RequireAuthorization();
     }
 }

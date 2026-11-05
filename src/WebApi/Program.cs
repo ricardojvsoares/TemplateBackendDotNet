@@ -15,6 +15,8 @@ builder.Host.UseSerilog(
         configuration.ReadFrom.Configuration(
             context.Configuration));
 
+builder.Host.UseInfrastructureMessaging();
+
 builder.Services
     .AddApplication()
     .AddInfrastructure()
@@ -36,6 +38,9 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
+
+app.UseAuthentication();
+app.UseAuthorization();
 
 app.MapCarter();
 

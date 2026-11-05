@@ -1,21 +1,20 @@
 using Application.Abstractions.Messaging;
+using Wolverine;
 
 namespace Infrastructure.Services.Messaging;
 
-internal sealed class MessageBroker : IMessageBroker
+internal sealed class MessageBroker(IMessageBus bus) : IMessageBroker
 {
-    public Task PublishAsync<T>(T message, Guid senderId, CancellationToken cancellationToken)
-    {
-        throw new NotImplementedException();
-    }
+    internal const string SenderIdHeader = "sender-id";
 
-    public Task SubscribeAsync<T>(Action<T> handler, CancellationToken cancellationToken)
+    public async Task PublishAsync<T>(T message, Guid senderId, CancellationToken cancellationToken)
     {
-        throw new NotImplementedException();
-    }
+        ArgumentNullException.ThrowIfNull(message);
+        cancellationToken.ThrowIfCancellationRequested();
 
-    public Task UnsubscribeAsync<T>(Action<T> handler, CancellationToken cancellationToken)
-    {
-        throw new NotImplementedException();
+        var options = new DeliveryOptions();
+        options.Headers[SenderIdHeader] = senderId.ToString();
+
+        await bus.PublishAsync(message, options);
     }
 }
