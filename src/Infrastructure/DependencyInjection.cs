@@ -27,9 +27,6 @@ public static class DependencyInjection
 {
     public static IServiceCollection AddInfrastructure(this IServiceCollection services)
     {
-        services.AddSingleton<IMessageService, MessageService>();
-        services.AddScoped<IStorageService, StorageService>();
-
         services.AddStorage();
         services.AddMessaging();
         services.AddKeycloak();
@@ -52,8 +49,10 @@ public static class DependencyInjection
             options.Discovery.IncludeAssembly(Application.AssemblyReference.Assembly));
     }
 
-    private static IServiceCollection AddStorage(this IServiceCollection services)
+    public static IServiceCollection AddStorage(this IServiceCollection services)
     {
+        services.AddScoped<IStorageService, StorageService>();
+
         services
             .AddOptions<StorageServiceSettings>()
             .Configure<IConfiguration>((settings, config) =>
@@ -68,32 +67,29 @@ public static class DependencyInjection
 
         services.AddSingleton<IAmazonS3>(sp =>
         {
-            var settings = sp.GetRequiredService<IOptions<StorageServiceSettings>>().Value;
-            var endpoint = settings.Endpoint.TrimEnd('/');
-            if (!endpoint.StartsWith("http://", StringComparison.OrdinalIgnoreCase)
-                && !endpoint.StartsWith("https://", StringComparison.OrdinalIgnoreCase))
-            {
-                endpoint = $"https://{endpoint}";
-            }
+            StorageServiceSettings settings = sp.GetRequiredService<IOptions<StorageServiceSettings>>().Value;
 
             var config = new AmazonS3Config
             {
-                ServiceURL = endpoint,
+                ServiceURL = settings.Endpoint,
                 ForcePathStyle = settings.ForcePathStyle,
                 AuthenticationRegion = settings.Region,
                 RequestChecksumCalculation = RequestChecksumCalculation.WHEN_REQUIRED,
-                ResponseChecksumValidation = ResponseChecksumValidation.WHEN_REQUIRED,
-                Timeout = TimeSpan.FromMinutes(30),
+                ResponseChecksumValidation = ResponseChecksumValidation.WHEN_REQUIRED
             };
 
-            var credentials = new BasicAWSCredentials(settings.AccessKey, settings.SecretKey);
-            return new AmazonS3Client(credentials, config);
+            return new AmazonS3Client(
+                new BasicAWSCredentials(settings.AccessKey, settings.SecretKey),
+                config);
         });
+
         return services;
     }
 
-    private static IServiceCollection AddMessaging(this IServiceCollection services)
+    public static IServiceCollection AddMessaging(this IServiceCollection services)
     {
+        services.AddSingleton<IMessageService, MessageService>();
+
         services
             .AddOptions<MessageServiceSettings>()
             .Configure<IConfiguration>((settings, config) =>
