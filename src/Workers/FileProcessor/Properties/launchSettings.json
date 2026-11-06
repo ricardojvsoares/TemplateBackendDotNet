@@ -1,0 +1,20 @@
+{
+  "$schema": "https://json.schemastore.org/launchsettings.json",
+  "profiles": {
+    "FileProcessor": {
+      "commandName": "Project",
+      "environmentVariables": {
+        "DOTNET_ENVIRONMENT": "Development",
+        "STORAGE_ENDPOINT": "http://localhost:12002",
+        "STORAGE_ACCESS_KEY": "user",
+        "STORAGE_SECRET_KEY": "password",
+        "STORAGE_BUCKET": "fegime",
+        "STORAGE_REGION": "eu-west-1",
+        "RABBITMQ_HOST": "localhost",
+        "RABBITMQ_PORT": "5672",
+        "RABBITMQ_USERNAME": "AdminFegime",
+        "RABBITMQ_PASSWORD": "J7cP3mD8yT5v"
+      }
+    }
+  }
+}
