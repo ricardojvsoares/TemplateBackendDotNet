@@ -1,6 +1,6 @@
 namespace Application.Abstractions.Storage;
 
-public interface IStorage
+public interface IStorageService
 {
     Task<MemoryStream> DownloadAsync(
         string path,

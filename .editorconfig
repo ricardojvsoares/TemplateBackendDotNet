@@ -414,3 +414,9 @@ dotnet_diagnostic.CA1056.severity = none
 
 # CA1515: Consider making public types internal
 dotnet_diagnostic.CA1515.severity = none
+
+# CA1873: Avoid potentially expensive logging
+dotnet_diagnostic.CA1873.severity = none
+
+# S2139
+dotnet_diagnostic.S2139.severity = none

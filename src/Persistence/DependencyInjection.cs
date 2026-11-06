@@ -14,7 +14,7 @@ public static class DependencyInjection
     public static IServiceCollection AddPersistence(this IServiceCollection services)
     {
 
-        services.AddScoped<ISqlConnectionFactory, SqlConnectionFactory>();
+        services.AddScoped<IDatabaseService, DatabaseService>();
 
         services.AddPostgres();
 
@@ -33,7 +33,7 @@ public static class DependencyInjection
     private static IServiceCollection AddPostgres(this IServiceCollection services)
     {
         services
-            .AddOptions<PostgresSettings>()
+            .AddOptions<DatabaseServiceSettings>()
             .Configure<IConfiguration>((settings, config) =>
             {
                 settings.Host = config["POSTGRES_HOST"] ?? "";
@@ -46,7 +46,7 @@ public static class DependencyInjection
 
         services.AddSingleton(sp =>
         {
-            var settings = sp.GetRequiredService<IOptions<PostgresSettings>>().Value;
+            var settings = sp.GetRequiredService<IOptions<DatabaseServiceSettings>>().Value;
             var connectionString = new NpgsqlConnectionStringBuilder
             {
                 Host = settings.Host,

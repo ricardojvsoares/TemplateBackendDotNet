@@ -9,10 +9,10 @@ namespace Persistence.Features.Users;
 
 internal sealed class UserRepository(
     ILogger<UserRepository> logger,
-    ISqlConnectionFactory sqlConnectionFactory)
+    IDatabaseService databaseService)
     : IUserRepository
 {
-    private readonly ISqlConnectionFactory _sqlConnectionFactory = sqlConnectionFactory;
+    private readonly IDatabaseService _databaseService = databaseService;
 
     public async Task<ErrorOr<Success>> ExistsByEmailAsync(
         string email,
@@ -20,7 +20,7 @@ internal sealed class UserRepository(
     {
         try
         {
-            using var connection = await _sqlConnectionFactory.CreateConnectionAsync(cancellationToken);
+            using var connection = await _databaseService.CreateConnectionAsync(cancellationToken);
 
             DynamicParameters parameters = new();
             parameters.Add("@p_email", email, DbType.String);
@@ -50,7 +50,7 @@ internal sealed class UserRepository(
     {
         try
         {
-            using var connection = await _sqlConnectionFactory.CreateConnectionAsync(cancellationToken);
+            using var connection = await _databaseService.CreateConnectionAsync(cancellationToken);
 
             DynamicParameters parameters = new();
             parameters.Add("@p_id", user.Id, DbType.Guid);

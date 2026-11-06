@@ -6,6 +6,7 @@
     <PackageVersion Include="Asp.Versioning.Http" Version="10.2.3" />
     <PackageVersion Include="Asp.Versioning.Mvc.ApiExplorer" Version="10.2.1" />
     <PackageVersion Include="Asp.Versioning.OpenApi" Version="10.2.3" />
+    <PackageVersion Include="AWSSDK.S3" Version="4.0.104.10" />
     <PackageVersion Include="Carter" Version="10.0.0" />
     <PackageVersion Include="Dapper" Version="2.1.89" />
     <PackageVersion Include="ErrorOr" Version="2.1.1" />

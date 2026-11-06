@@ -3,6 +3,7 @@ using Application.Features.Users.Commands.CreateUser;
 using WebApi.Extensions;
 using Microsoft.AspNetCore.Mvc;
 using Wolverine;
+using Domain.Features.Users;
 
 namespace WebApi.Features.Users.Endpoints;
 
@@ -22,17 +23,12 @@ internal static class CreateUserEndpoint
                         command,
                         cancellationToken);
 
-                if (result.IsError)
-                {
-                    return result.ToResult();
-                }
-
-                return Results.Ok(result.Value);
+                return result.IsError ? result.ToResult() : Results.Ok(result.Value);
             })
             .WithSummary("Create User")
             .WithName("CreateUser")
             .Produces<CreateUserResponse>(StatusCodes.Status201Created)
             .ProducesValidationProblem()
-            .RequireAuthorization();
+            .RequireAuthorization(UserPolicies.Create);
     }
 }

@@ -25,8 +25,8 @@ public static class DependencyInjection
 {
     public static IServiceCollection AddInfrastructure(this IServiceCollection services)
     {
-        services.AddSingleton<IMessageBroker, MessageBroker>();
-        services.AddScoped<IStorage, Storage>();
+        services.AddSingleton<IMessageService, MessageService>();
+        services.AddScoped<IStorageService, StorageService>();
 
         services.AddStorage();
         services.AddMessaging();
@@ -53,7 +53,7 @@ public static class DependencyInjection
     private static IServiceCollection AddStorage(this IServiceCollection services)
     {
         services
-            .AddOptions<StorageSettings>()
+            .AddOptions<StorageServiceSettings>()
             .Configure<IConfiguration>((settings, config) =>
             {
                 settings.Endpoint = config["STORAGE_ENDPOINT"] ?? "";
@@ -69,10 +69,10 @@ public static class DependencyInjection
     private static IServiceCollection AddMessaging(this IServiceCollection services)
     {
         services
-            .AddOptions<RabbitMqSettings>()
+            .AddOptions<MessageServiceSettings>()
             .Configure<IConfiguration>((settings, config) =>
             {
-                RabbitMqSettings read = ReadRabbitMqSettings(config);
+                MessageServiceSettings read = ReadMessageServiceSettings(config);
                 settings.Host = read.Host;
                 settings.Port = read.Port;
                 settings.Username = read.Username;
@@ -85,7 +85,7 @@ public static class DependencyInjection
         return services;
     }
 
-    private static RabbitMqSettings ReadRabbitMqSettings(IConfiguration config)
+    private static MessageServiceSettings ReadMessageServiceSettings(IConfiguration config)
         => new()
         {
             Host = config["RABBITMQ_HOST"] ?? "",
