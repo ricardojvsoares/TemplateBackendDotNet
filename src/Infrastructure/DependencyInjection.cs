@@ -1,3 +1,5 @@
+using Amazon.Runtime;
+using Amazon.S3;
 using Application.Abstractions.Identity;
 using Application.Abstractions.Identity.Keycloak;
 using Application.Abstractions.Messaging;
@@ -63,6 +65,30 @@ public static class DependencyInjection
                 settings.Region = config["STORAGE_REGION"] ?? "";
             })
             .ValidateOnStart();
+
+        services.AddSingleton<IAmazonS3>(sp =>
+        {
+            var settings = sp.GetRequiredService<IOptions<StorageServiceSettings>>().Value;
+            var endpoint = settings.Endpoint.TrimEnd('/');
+            if (!endpoint.StartsWith("http://", StringComparison.OrdinalIgnoreCase)
+                && !endpoint.StartsWith("https://", StringComparison.OrdinalIgnoreCase))
+            {
+                endpoint = $"https://{endpoint}";
+            }
+
+            var config = new AmazonS3Config
+            {
+                ServiceURL = endpoint,
+                ForcePathStyle = settings.ForcePathStyle,
+                AuthenticationRegion = settings.Region,
+                RequestChecksumCalculation = RequestChecksumCalculation.WHEN_REQUIRED,
+                ResponseChecksumValidation = ResponseChecksumValidation.WHEN_REQUIRED,
+                Timeout = TimeSpan.FromMinutes(30),
+            };
+
+            var credentials = new BasicAWSCredentials(settings.AccessKey, settings.SecretKey);
+            return new AmazonS3Client(credentials, config);
+        });
         return services;
     }
 
