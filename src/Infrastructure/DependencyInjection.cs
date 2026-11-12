@@ -5,12 +5,14 @@ using Application.Abstractions.Identity.Keycloak;
 using Application.Abstractions.Messaging;
 using Application.Abstractions.Storage;
 using Application.Settings;
+using Infrastructure.Policies;
 using Infrastructure.Services.Identity;
 using Infrastructure.Services.Identity.Keycloak;
 using Infrastructure.Services.Messaging;
 using Infrastructure.Services.Storage;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
@@ -47,7 +49,13 @@ public static class DependencyInjection
     public static IHostBuilder UseInfrastructureMessaging(this IHostBuilder host)
     {
         return host.UseWolverine(options =>
-            options.Discovery.IncludeAssembly(Application.AssemblyReference.Assembly));
+        {
+            options.Discovery.IncludeAssembly(Application.AssemblyReference.Assembly);
+
+            options.CodeGeneration.AlwaysUseServiceLocationFor<IKeycloakAdminUsersService>();
+            options.CodeGeneration.AlwaysUseServiceLocationFor<IKeycloakAdminSessionsService>();
+            options.CodeGeneration.AlwaysUseServiceLocationFor<IKeycloakAdminClientsService>();
+        });
     }
 
     public static IServiceCollection AddStorage(this IServiceCollection services)
@@ -170,6 +178,7 @@ public static class DependencyInjection
             });
 
         services.AddAuthorization();
+        services.AddSingleton<IAuthorizationHandler, PermissionAuthorizationHandler>();
         services.AddSingleton<IClaimsTransformation, KeycloakClaimsTransformation>();
 
         services.AddHttpContextAccessor();
