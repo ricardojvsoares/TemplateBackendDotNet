@@ -29,7 +29,13 @@
         "KEYCLOAK_METADATA_ADDRESS": "http://localhost:8085/realms/fegime/.well-known/openid-configuration",
         "KEYCLOAK_REQUIRE_HTTPS_METADATA": "false",
         "KEYCLOAK_ADMIN_CLIENT_ID": "connect-admin",
-        "KEYCLOAK_ADMIN_CLIENT_SECRET": "AVtDdvROB3SBSBrIlcZtgnmWcJhXeCXD"
+        "KEYCLOAK_ADMIN_CLIENT_SECRET": "AVtDdvROB3SBSBrIlcZtgnmWcJhXeCXD",
+        "SMTP_HOST": "mail.zero-one.pt",
+        "SMTP_PORT": "587",
+        "SMTP_SECURE": "false",
+        "SMTP_USER": "devlab@zero-one.pt",
+        "SMTP_PASS": "E5@LFk4]2+0LlS",
+        "SMTP_FROM": "devlab@zero-one.pt"
       }
     },
     "https": {
@@ -60,7 +66,13 @@
         "KEYCLOAK_METADATA_ADDRESS": "http://localhost:8085/realms/fegime/.well-known/openid-configuration",
         "KEYCLOAK_REQUIRE_HTTPS_METADATA": "false",
         "KEYCLOAK_ADMIN_CLIENT_ID": "connect-admin",
-        "KEYCLOAK_ADMIN_CLIENT_SECRET": "AVtDdvROB3SBSBrIlcZtgnmWcJhXeCXD"
+        "KEYCLOAK_ADMIN_CLIENT_SECRET": "AVtDdvROB3SBSBrIlcZtgnmWcJhXeCXD",
+        "SMTP_HOST": "mail.zero-one.pt",
+        "SMTP_PORT": "587",
+        "SMTP_SECURE": "false",
+        "SMTP_USER": "devlab@zero-one.pt",
+        "SMTP_PASS": "E5@LFk4]2+0LlS",
+        "SMTP_FROM": "devlab@zero-one.pt"
       }
     }
   }

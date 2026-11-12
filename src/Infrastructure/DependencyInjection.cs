@@ -30,6 +30,7 @@ public static class DependencyInjection
         services.AddStorage();
         services.AddMessaging();
         services.AddKeycloak();
+        services.AddSmtp();
 
         services.Scan(
             s => s
@@ -195,6 +196,24 @@ public static class DependencyInjection
                 client.BaseAddress = KeycloakEndpoints.GetAdminBaseUri(
                     sp.GetRequiredService<IOptions<KeycloakSettings>>().Value))
             .AddHttpMessageHandler<KeycloakAdminAuthHandler>();
+    }
+    private static IServiceCollection AddSmtp(this IServiceCollection services)
+    {
+        services
+            .AddOptions<MailServiceSettings>()
+            .Configure<IConfiguration>((settings, config) =>
+            {
+                settings.Host = config["SMTP_HOST"] ?? "";
+                settings.Port = int.TryParse(config["SMTP_PORT"], out var port) ? port : 587;
+                settings.Secure = bool.TryParse(config["SMTP_SECURE"], out var secure) && secure;
+                settings.User = config["SMTP_USER"] ?? "";
+                settings.Password = config["SMTP_PASS"] ?? "";
+                settings.From = config["SMTP_FROM"] ?? "";
+            })
+            .ValidateDataAnnotations()
+            .ValidateOnStart();
+
+        return services;
     }
 
 }
