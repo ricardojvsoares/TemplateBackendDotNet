@@ -41,8 +41,8 @@ public sealed class FileProcessorWorker(
         using MemoryStream stream = await storage.DownloadAsync(message.ObjectKey, cancellationToken);
         string content = Encoding.UTF8.GetString(stream.ToArray());
 
-        Console.WriteLine($"----- {message.FileName} -----");
+        logger.LogInformation("----- {FileName} -----", message.FileName);
         Console.WriteLine(content);
-        Console.WriteLine($"----- end of {message.FileName} -----");
+        logger.LogInformation("----- end of {FileName} -----", message.FileName);
     }
 }
