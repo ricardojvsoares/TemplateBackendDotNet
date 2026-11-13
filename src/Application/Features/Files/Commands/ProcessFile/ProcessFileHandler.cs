@@ -22,12 +22,6 @@ public static class ProcessFileHandler
             {
                 return Error.Validation("File.NameEmpty", "File name is empty");
             }
-            if (command.Recipients.Count == 0 || command.Recipients.Any(string.IsNullOrWhiteSpace))
-            {
-                return Error.Validation(
-                    "File.RecipientsInvalid",
-                    "At least one valid recipient is required.");
-            }
 
             using var buffer = new MemoryStream();
             await command.FileStream.CopyToAsync(buffer, cancellationToken);
@@ -50,20 +44,23 @@ public static class ProcessFileHandler
                 Guid.CreateVersion7(),
                 cancellationToken);
 
-            var attachment = new EmailAttachment
+            if (command.Recipients.Count > 0 && !command.Recipients.Any(string.IsNullOrWhiteSpace))
             {
-                FileName = command.FileName,
-                ContentType = command.ContentType,
-                Content = fileBytes
-            };
+                var attachment = new EmailAttachment
+                {
+                    FileName = command.FileName,
+                    ContentType = command.ContentType,
+                    Content = fileBytes
+                };
 
-            await mail.SendAsync(
-                command.Recipients,
-                cc: [],
-                "Test",
-                "random body",
-                [attachment],
-                cancellationToken);
+                await mail.SendAsync(
+                    command.Recipients,
+                    cc: [],
+                    "Test",
+                    "random body",
+                    [attachment],
+                    cancellationToken);
+            }
 
             return new ProcessFileResponse(command.FileName);
         }
