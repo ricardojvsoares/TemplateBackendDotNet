@@ -33,7 +33,7 @@ public static class ProcessFileHandler
             await command.FileStream.CopyToAsync(buffer, cancellationToken);
             byte[] fileBytes = buffer.ToArray();
 
-            var storageStream = new MemoryStream(fileBytes);
+            using var storageStream = new MemoryStream(fileBytes);
 
             await storage.StoreAsync(
                 storageStream,
@@ -67,10 +67,14 @@ public static class ProcessFileHandler
 
             return new ProcessFileResponse(command.FileName);
         }
+        catch (OperationCanceledException)
+        {
+            throw;
+        }
         catch (Exception ex)
         {
-            logger.LogError(ex, "Error processing file");
-            throw;
+            logger.LogError(ex, "Error processing file {FileName}", command.FileName);
+            return Error.Unexpected("File.ProcessError", "Error processing file");
         }
 
     }

@@ -17,9 +17,12 @@ internal static class UploadFileEndpoint
                 [FromServices] IMessageBus bus,
                 CancellationToken cancellationToken) =>
             {
-                if (request.File.Length == 0)
+                if (request.File is null)
                 {
-                    return Results.BadRequest("File is empty.");
+                    return Results.ValidationProblem(new Dictionary<string, string[]>
+                    {
+                        ["File.Missing"] = ["File is required."]
+                    });
                 }
 
                 string fileName = Guid.CreateVersion7() + "_" + Path.GetFileName(request.File.FileName);
@@ -36,13 +39,15 @@ internal static class UploadFileEndpoint
                         command,
                         cancellationToken);
 
-                return result.ToResult();
+                return result.ToAcceptedResult();
             })
             .DisableAntiforgery()
             .AllowAnonymous()
             .WithSummary("Upload file (mock)")
             .WithName("UploadFile")
-            .Produces<ProcessFileResponse>(StatusCodes.Status200OK);
+            .Produces<ProcessFileResponse>(StatusCodes.Status202Accepted)
+            .ProducesValidationProblem()
+            .ProducesProblem(StatusCodes.Status500InternalServerError);
     }
 }
 

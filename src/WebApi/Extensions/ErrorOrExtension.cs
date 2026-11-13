@@ -4,15 +4,28 @@ namespace WebApi.Extensions;
 
 internal static class ErrorOrExtension
 {
+    internal static IResult ToResult<T>(this ErrorOr<T> result) =>
+        result.ToResult(value => Results.Ok(value));
+
     internal static IResult ToResult<T>(
-        this ErrorOr<T> result)
+        this ErrorOr<T> result,
+        Func<T, IResult> onSuccess)
     {
         return result.Match(
-            value => Results.Ok(value),
+            onSuccess,
             errors => errors.All(e => e.Type is ErrorType.Validation)
                 ? ToValidationProblem(errors)
                 : ToProblem(errors));
     }
+
+    internal static IResult ToCreatedResult<T>(this ErrorOr<T> result) =>
+        result.ToResult(value => Results.Json(value, statusCode: StatusCodes.Status201Created));
+
+    internal static IResult ToAcceptedResult<T>(this ErrorOr<T> result) =>
+        result.ToResult(value => Results.Json(value, statusCode: StatusCodes.Status202Accepted));
+
+    internal static IResult ToNoContentResult<T>(this ErrorOr<T> result) =>
+        result.ToResult(_ => Results.NoContent());
 
     private static IResult ToValidationProblem(List<Error> errors)
     {
