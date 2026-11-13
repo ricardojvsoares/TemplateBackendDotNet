@@ -2,6 +2,7 @@ using FileProcessor;
 using Infrastructure;
 using Serilog;
 
+DotNetEnv.Env.TraversePath().Load();
 HostApplicationBuilder builder = Host.CreateApplicationBuilder(args);
 
 builder.Services.AddSerilog((services, configuration) =>

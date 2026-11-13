@@ -6,6 +6,7 @@ using Serilog;
 using Scalar.AspNetCore;
 using Carter;
 
+DotNetEnv.Env.TraversePath().Load();
 var builder = WebApplication.CreateBuilder(args);
 
 
