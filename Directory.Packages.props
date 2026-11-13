@@ -27,6 +27,7 @@
     <PackageVersion Include="WolverineFx" Version="6.61.0" />
     <PackageVersion Include="WolverineFx.RabbitMQ" Version="6.61.0" />
     <PackageVersion Include="WolverineFx.RuntimeCompilation" Version="6.61.0" />
+    <PackageVersion Include="dbup-postgresql" Version="7.0.1" />
   </ItemGroup>
   <ItemGroup>
     <GlobalPackageReference Include="SonarAnalyzer.CSharp" Version="10.21.0.135717">

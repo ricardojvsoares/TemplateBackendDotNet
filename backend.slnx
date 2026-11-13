@@ -2,9 +2,12 @@
   <Folder Name="/src/">
     <Project Path="src/Application/Application.csproj" />
     <Project Path="src/Domain/Domain.csproj" />
-    <Project Path="src/Workers/FileProcessor/FileProcessor.csproj" />
     <Project Path="src/Infrastructure/Infrastructure.csproj" />
     <Project Path="src/Persistence/Persistence.csproj" />
     <Project Path="src/WebApi/WebApi.csproj" />
+  </Folder>
+  <Folder Name="/src/Workers/">
+    <Project Path="src/Workers/FileProcessor/FileProcessor.csproj" />
+    <Project Path="src/Workers/Migrations/Migrations.csproj" />
   </Folder>
 </Solution>

@@ -420,3 +420,6 @@ dotnet_diagnostic.CA1873.severity = none
 
 # S2139
 dotnet_diagnostic.S2139.severity = none
+
+# CA1305: Specify IFormatProvider
+dotnet_diagnostic.CA1305.severity = none

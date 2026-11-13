@@ -74,20 +74,21 @@ services:
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
       - ASPNETCORE_HTTP_PORTS=8080
-      - STORAGE_ENDPOINT=${STORAGE_ENDPOINT}
+
+      - STORAGE_ENDPOINT=http://storage:9000
       - STORAGE_ACCESS_KEY=${STORAGE_ACCESS_KEY}
       - STORAGE_SECRET_KEY=${STORAGE_SECRET_KEY}
       - STORAGE_BUCKET=${STORAGE_BUCKET}
       - STORAGE_REGION=${STORAGE_REGION}
 
-      - POSTGRES_HOST=${POSTGRES_HOST}
-      - POSTGRES_PORT=${POSTGRES_PORT}
+      - POSTGRES_HOST=db
+      - POSTGRES_PORT=5432
       - POSTGRES_DATABASE=${POSTGRES_DATABASE}
       - POSTGRES_USERNAME=${POSTGRES_USERNAME}
       - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
 
-      - RABBITMQ_HOST=${RABBITMQ_HOST}
-      - RABBITMQ_PORT=${RABBITMQ_PORT}
+      - RABBITMQ_HOST=rabbit
+      - RABBITMQ_PORT=5672
       - RABBITMQ_USERNAME=${RABBITMQ_USERNAME}
       - RABBITMQ_PASSWORD=${RABBITMQ_PASSWORD}
 
@@ -111,14 +112,15 @@ services:
     networks:
       - app-net
     depends_on:
-      db:
-        condition: service_healthy
+      migrator:
+        condition: service_completed_successfully
       rabbit:
         condition: service_healthy
       storage:
         condition: service_healthy
 
   file-processor:
+    container_name: file-processor
     build:
       context: .
       dockerfile: src/Workers/Dockerfile
@@ -142,6 +144,27 @@ services:
         condition: service_healthy
       storage:
         condition: service_healthy
+
+  migrator:
+    container_name: migrator
+    build:
+      context: .
+      dockerfile: src/Workers/Dockerfile
+      args:
+        WORKER: Migrations
+    restart: "no"
+    environment:
+      POSTGRES_HOST: db
+      POSTGRES_PORT: 5432
+      POSTGRES_DATABASE: ${POSTGRES_DATABASE}
+      POSTGRES_USERNAME: ${POSTGRES_USERNAME}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    networks:
+      - app-net
+    depends_on:
+      db:
+        condition: service_healthy
+
 networks:
   app-net:
     name: app-net
