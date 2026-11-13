@@ -3,7 +3,7 @@ USER $APP_UID
 WORKDIR /app
 
 FROM mcr.microsoft.com/dotnet/sdk:10.0 AS build
-ARG WORKER            # e.g. FileProcessor
+ARG WORKER
 WORKDIR /src
 COPY . .
 RUN dotnet publish "src/Workers/${WORKER}/${WORKER}.csproj" \
