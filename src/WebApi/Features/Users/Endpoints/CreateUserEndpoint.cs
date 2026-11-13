@@ -23,7 +23,7 @@ internal static class CreateUserEndpoint
                         command,
                         cancellationToken);
 
-                return result.IsError ? result.ToResult() : Results.Ok(result.Value);
+                return result.ToResult();
             })
             .WithSummary("Create User")
             .WithName("CreateUser")
