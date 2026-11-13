@@ -1,10 +1,79 @@
+name: app
+
 services:
+  db:
+    container_name: app-db
+    image: postgres:18
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USERNAME}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DATABASE}
+    ports:
+      - "${POSTGRES_PORT}:5432"
+    volumes:
+      - app-data:/var/lib/postgresql
+    networks:
+      - app-net
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          "pg_isready -U ${POSTGRES_USERNAME} -d ${POSTGRES_DATABASE}",
+        ]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  rabbit:
+    container_name: app-rabbitmq
+    image: rabbitmq:4.4.0-management
+    restart: unless-stopped
+    ports:
+      - "${RABBITMQ_PORT}:5672"
+      - "${RABBITMQ_MANAGEMENT_PORT}:15672"
+    environment:
+      RABBITMQ_DEFAULT_USER: ${RABBITMQ_USERNAME}
+      RABBITMQ_DEFAULT_PASS: ${RABBITMQ_PASSWORD}
+    networks:
+      - app-net
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "check_running"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  storage:
+    container_name: app-storage
+    image: quay.io/minio/aistor/minio:latest
+    restart: unless-stopped
+    ports:
+      - "${STORAGE_PORT}:9000"
+      - "${STORAGE_CONSOLE_PORT}:9001"
+    environment:
+      MINIO_ROOT_USER: ${STORAGE_ACCESS_KEY}
+      MINIO_ROOT_PASSWORD: ${STORAGE_SECRET_KEY}
+    command: server /data --console-address ":9001" --license /minio.license
+    volumes:
+      - app-storage:/data
+      - ${STORAGE_LICENSE_PATH}:/minio.license
+    networks:
+      - app-net
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9000/minio/health/live"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
   backend:
     build:
       context: .
       dockerfile: src/WebApi/Dockerfile
-    container_name: backend
+    container_name: app-backend
+    restart: unless-stopped
     environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ASPNETCORE_HTTP_PORTS=8080
       - STORAGE_ENDPOINT=${STORAGE_ENDPOINT}
       - STORAGE_ACCESS_KEY=${STORAGE_ACCESS_KEY}
       - STORAGE_SECRET_KEY=${STORAGE_SECRET_KEY}
@@ -30,12 +99,31 @@ services:
       - KEYCLOAK_REQUIRE_HTTPS_METADATA=${KEYCLOAK_REQUIRE_HTTPS_METADATA}
       - KEYCLOAK_ADMIN_CLIENT_ID=${KEYCLOAK_ADMIN_CLIENT_ID}
       - KEYCLOAK_ADMIN_CLIENT_SECRET=${KEYCLOAK_ADMIN_CLIENT_SECRET}
+
+      - SMTP_HOST=${SMTP_HOST}
+      - SMTP_PORT=${SMTP_PORT}
+      - SMTP_SECURE=${SMTP_SECURE}
+      - SMTP_USER=${SMTP_USER}
+      - SMTP_PASS=${SMTP_PASS}
+      - SMTP_FROM=${SMTP_FROM}
     ports:
-      - 5000:8080
-      - 5001:8081
+      - "5000:8080"
     networks:
       - app-net
+    depends_on:
+      db:
+        condition: service_healthy
+      rabbit:
+        condition: service_healthy
+      storage:
+        condition: service_healthy
 
 networks:
   app-net:
-    external: true
+    name: app-net
+
+volumes:
+  app-data:
+    name: app-data
+  app-storage:
+    name: app-storage
