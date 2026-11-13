@@ -118,6 +118,30 @@ services:
       storage:
         condition: service_healthy
 
+  file-processor:
+    build:
+      context: .
+      dockerfile: src/Workers/Dockerfile
+      args:
+        WORKER: FileProcessor
+    environment:
+      - DOTNET_ENVIRONMENT=Development
+      - STORAGE_ENDPOINT=http://storage:9000
+      - STORAGE_ACCESS_KEY=${STORAGE_ACCESS_KEY}
+      - STORAGE_SECRET_KEY=${STORAGE_SECRET_KEY}
+      - STORAGE_BUCKET=${STORAGE_BUCKET}
+      - STORAGE_REGION=${STORAGE_REGION}
+      - RABBITMQ_HOST=rabbit
+      - RABBITMQ_PORT=5672
+      - RABBITMQ_USERNAME=${RABBITMQ_USERNAME}
+      - RABBITMQ_PASSWORD=${RABBITMQ_PASSWORD}
+    networks:
+      - app-net
+    depends_on:
+      rabbit:
+        condition: service_healthy
+      storage:
+        condition: service_healthy
 networks:
   app-net:
     name: app-net
