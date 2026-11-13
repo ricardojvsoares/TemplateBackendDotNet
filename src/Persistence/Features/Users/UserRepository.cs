@@ -20,7 +20,7 @@ internal sealed class UserRepository(
     {
         try
         {
-            using var connection = await _databaseService.CreateConnectionAsync(cancellationToken);
+            var connection = await _databaseService.CreateConnectionAsync(cancellationToken);
 
             DynamicParameters parameters = new();
             parameters.Add("@p_email", email, DbType.String);
@@ -28,7 +28,6 @@ internal sealed class UserRepository(
             var command = new CommandDefinition(
                 UserQueries.ExistsByEmail,
                 parameters,
-                transaction: connection.BeginTransaction(),
                 cancellationToken: cancellationToken);
 
             var exists = await connection.ExecuteScalarAsync<int?>(command);
@@ -50,7 +49,7 @@ internal sealed class UserRepository(
     {
         try
         {
-            using var connection = await _databaseService.CreateConnectionAsync(cancellationToken);
+            var connection = await _databaseService.CreateConnectionAsync(cancellationToken);
 
             DynamicParameters parameters = new();
             parameters.Add("@p_id", user.Id, DbType.Guid);
@@ -63,7 +62,6 @@ internal sealed class UserRepository(
             var command = new CommandDefinition(
                 UserQueries.Create,
                 parameters,
-                transaction: connection.BeginTransaction(),
                 cancellationToken: cancellationToken);
 
             var id = await connection.ExecuteScalarAsync<Guid>(command);
