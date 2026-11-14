@@ -5,6 +5,8 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using Npgsql;
+using OpenTelemetry;
+using OpenTelemetry.Trace;
 using Persistence.Services.Data;
 using Scrutor;
 
@@ -22,6 +24,10 @@ public static class DependencyInjection
         services.AddScoped<IDatabaseService, DatabaseService>();
 
         services.AddPostgres();
+
+        services
+            .AddOpenTelemetry()
+            .WithTracing(tracing => tracing.AddNpgsql());
 
         services.Scan(
             s => s

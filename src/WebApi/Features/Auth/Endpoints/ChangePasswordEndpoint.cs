@@ -1,7 +1,9 @@
 using Application.Features.Auth.Commands.ChangePassword;
 using ErrorOr;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 using WebApi.Extensions;
+using WebApi.RateLimiting;
 using Wolverine;
 
 namespace WebApi.Features.Auth.Endpoints;
@@ -23,6 +25,7 @@ internal static class ChangePasswordEndpoint
                 return result.ToNoContentResult();
             })
             .RequireAuthorization()
+            .RequireRateLimiting(RateLimitPolicies.Auth)
             .WithSummary("Change Password")
             .WithName("ChangePassword")
             .Produces(StatusCodes.Status204NoContent)

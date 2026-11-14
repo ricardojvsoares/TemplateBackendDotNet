@@ -25,6 +25,8 @@ using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
+using OpenTelemetry;
+using OpenTelemetry.Trace;
 using Scrutor;
 using StackExchange.Redis;
 using Wolverine;
@@ -161,6 +163,10 @@ public static class DependencyInjection
 
             return ConnectionMultiplexer.Connect(configuration);
         });
+
+        services
+            .AddOpenTelemetry()
+            .WithTracing(tracing => tracing.AddRedisInstrumentation());
 
         return services;
     }

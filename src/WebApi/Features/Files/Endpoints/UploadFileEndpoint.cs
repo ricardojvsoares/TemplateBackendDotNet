@@ -1,7 +1,9 @@
 using Application.Features.Files.Commands.ProcessFile;
 using ErrorOr;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 using WebApi.Extensions;
+using WebApi.RateLimiting;
 using Wolverine;
 
 namespace WebApi.Features.Files.Endpoints;
@@ -43,6 +45,7 @@ internal static class UploadFileEndpoint
             })
             .DisableAntiforgery()
             .AllowAnonymous()
+            .RequireRateLimiting(RateLimitPolicies.Upload)
             .WithSummary("Upload file (mock)")
             .WithName("UploadFile")
             .Produces<ProcessFileResponse>(StatusCodes.Status202Accepted)

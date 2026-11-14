@@ -9,6 +9,11 @@ namespace WebApi.Tests;
 
 public sealed class ApiFactory : WebApplicationFactory<Program>
 {
+    static ApiFactory()
+    {
+        Environment.SetEnvironmentVariable("OTEL_SDK_DISABLED", "true");
+    }
+
     protected override void ConfigureWebHost(IWebHostBuilder builder)
     {
         builder.UseEnvironment("Development");

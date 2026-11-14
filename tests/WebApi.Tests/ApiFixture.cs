@@ -225,7 +225,14 @@ public sealed class ApiFixture : IAsyncLifetime, IDisposable
             ["AUTH_ADMIN_FIRST_NAME"] = AdminFirstName,
             ["AUTH_ADMIN_LAST_NAME"] = AdminLastName,
             ["RESEND_API_KEY"] = "re_test_key",
-            ["RESEND_FROM"] = "test@example.com"
+            ["RESEND_FROM"] = "test@example.com",
+            ["RATE_LIMIT_PREFIX"] = "suite",
+            ["RATE_LIMIT_GLOBAL_PERMIT"] = "10000",
+            ["RATE_LIMIT_GLOBAL_WINDOW_SECONDS"] = "60",
+            ["RATE_LIMIT_AUTH_PERMIT"] = "10000",
+            ["RATE_LIMIT_AUTH_WINDOW_SECONDS"] = "60",
+            ["RATE_LIMIT_UPLOAD_PERMIT"] = "10000",
+            ["RATE_LIMIT_UPLOAD_WINDOW_SECONDS"] = "60"
         };
 
         foreach ((string key, string? value) in values)

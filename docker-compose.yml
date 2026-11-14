@@ -82,6 +82,22 @@ services:
       timeout: 5s
       retries: 5
 
+  aspire-dashboard:
+    container_name: app-aspire-dashboard
+    image: mcr.microsoft.com/aspire/dashboard:13.6.5
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:18888:18888"
+      - "127.0.0.1:4317:18889"
+    environment:
+      ASPNETCORE_URLS: http://+:18888
+      ASPIRE_DASHBOARD_OTLP_ENDPOINT_URL: http://+:18889
+      ASPIRE_DASHBOARD_OTLP_HTTP_ENDPOINT_URL: http://+:18890
+      # Local only. Anonymous UI and OTLP. Do not expose this service.
+      ASPIRE_DASHBOARD_UNSECURED_ALLOW_ANONYMOUS: "true"
+    networks:
+      - app-net
+
   backend:
     build:
       context: .
@@ -125,6 +141,18 @@ services:
 
       - RESEND_API_KEY=${RESEND_API_KEY}
       - RESEND_FROM=${RESEND_FROM}
+
+      - RATE_LIMIT_PREFIX=${RATE_LIMIT_PREFIX}
+      - RATE_LIMIT_GLOBAL_PERMIT=${RATE_LIMIT_GLOBAL_PERMIT}
+      - RATE_LIMIT_GLOBAL_WINDOW_SECONDS=${RATE_LIMIT_GLOBAL_WINDOW_SECONDS}
+      - RATE_LIMIT_AUTH_PERMIT=${RATE_LIMIT_AUTH_PERMIT}
+      - RATE_LIMIT_AUTH_WINDOW_SECONDS=${RATE_LIMIT_AUTH_WINDOW_SECONDS}
+      - RATE_LIMIT_UPLOAD_PERMIT=${RATE_LIMIT_UPLOAD_PERMIT}
+      - RATE_LIMIT_UPLOAD_WINDOW_SECONDS=${RATE_LIMIT_UPLOAD_WINDOW_SECONDS}
+
+      - OTEL_EXPORTER_OTLP_ENDPOINT=http://aspire-dashboard:18889
+      - OTEL_EXPORTER_OTLP_PROTOCOL=grpc
+      - OTEL_SERVICE_NAME=WebApi
     ports:
       - "5000:8080"
     networks:
@@ -138,6 +166,8 @@ services:
         condition: service_healthy
       redis:
         condition: service_healthy
+      aspire-dashboard:
+        condition: service_started
 
   file-processor:
     container_name: file-processor
@@ -157,6 +187,9 @@ services:
       - RABBITMQ_PORT=5672
       - RABBITMQ_USERNAME=${RABBITMQ_USERNAME}
       - RABBITMQ_PASSWORD=${RABBITMQ_PASSWORD}
+      - OTEL_EXPORTER_OTLP_ENDPOINT=http://aspire-dashboard:18889
+      - OTEL_EXPORTER_OTLP_PROTOCOL=grpc
+      - OTEL_SERVICE_NAME=FileProcessor
     networks:
       - app-net
     depends_on:
@@ -164,6 +197,8 @@ services:
         condition: service_healthy
       storage:
         condition: service_healthy
+      aspire-dashboard:
+        condition: service_started
 
   scheduler:
     container_name: app-scheduler
@@ -182,6 +217,9 @@ services:
       - REDIS_HOST=redis
       - REDIS_PORT=6379
       - REDIS_PASSWORD=${REDIS_PASSWORD}
+      - OTEL_EXPORTER_OTLP_ENDPOINT=http://aspire-dashboard:18889
+      - OTEL_EXPORTER_OTLP_PROTOCOL=grpc
+      - OTEL_SERVICE_NAME=Scheduler
     networks:
       - app-net
     depends_on:
@@ -191,6 +229,8 @@ services:
         condition: service_healthy
       redis:
         condition: service_healthy
+      aspire-dashboard:
+        condition: service_started
 
   migrator:
     container_name: migrator

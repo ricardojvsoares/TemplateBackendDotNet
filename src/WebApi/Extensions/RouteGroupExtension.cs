@@ -27,7 +27,8 @@ internal static class RouteGroupExtension
 
         return app.MapGroup($"api/v{{apiVersion:apiVersion}}/{prefix}")
             .WithApiVersionSet(versionSet)
-            .WithTags(tag);
+            .WithTags(tag)
+            .ProducesProblem(StatusCodes.Status429TooManyRequests);
     }
 
 #pragma warning disable CA1308

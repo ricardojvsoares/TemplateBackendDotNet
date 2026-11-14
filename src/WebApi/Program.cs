@@ -1,12 +1,15 @@
 using Application.Abstractions.Identity;
 using Asp.Versioning;
 using Infrastructure;
+using Infrastructure.Telemetry;
 using Persistence;
 using Application;
 using Serilog;
 using Scalar.AspNetCore;
 using Carter;
+using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.Extensions.DependencyInjection;
+using WebApi.Extensions;
 
 DotNetEnv.Env.NoClobber().TraversePath().Load();
 var builder = WebApplication.CreateBuilder(args);
@@ -30,15 +33,18 @@ builder.Services
 
 builder.Host.UseSerilog(
     (context, configuration) =>
-        configuration.ReadFrom.Configuration(
-            context.Configuration));
+        configuration
+            .ReadFrom.Configuration(context.Configuration)
+            .WriteToOpenTelemetry(context.Configuration, "WebApi"));
 
 builder.Host.UseInfrastructureMessaging();
 
 builder.Services
+    .AddAppTelemetry(builder.Configuration, "WebApi", instrumentAspNetCore: true)
     .AddApplication()
     .AddInfrastructure()
-    .AddPersistence();
+    .AddPersistence()
+    .AddApiRateLimiting();
 
 builder.Services.AddCarter();
 
@@ -46,13 +52,13 @@ var app = builder.Build();
 
 if (app.Environment.IsDevelopment())
 {
-    app.MapOpenApi().WithDocumentPerVersion();
+    app.MapOpenApi().WithDocumentPerVersion().DisableRateLimiting();
 
     app.MapScalarApiReference("/docs", options =>
     {
         options.WithTitle("Api");
         options.WithOpenApiRoutePattern("/openapi/{documentName}.json");
-    });
+    }).DisableRateLimiting();
 }
 
 if (!string.IsNullOrEmpty(builder.Configuration["ASPNETCORE_HTTPS_PORTS"])
@@ -62,6 +68,7 @@ if (!string.IsNullOrEmpty(builder.Configuration["ASPNETCORE_HTTPS_PORTS"])
 }
 
 app.UseAuthentication();
+app.UseRateLimiter();
 app.UseAuthorization();
 
 app.MapCarter();
