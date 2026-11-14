@@ -8,7 +8,7 @@ using Infrastructure.Services.Identity;
 using Microsoft.Extensions.Options;
 using Xunit;
 
-namespace WebApi.Tests;
+namespace Infrastructure.Tests;
 
 public sealed class IdentityServiceTests
 {

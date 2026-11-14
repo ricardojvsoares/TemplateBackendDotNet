@@ -9,4 +9,17 @@
 		<CodeAnalysisTreatWarningsAsErrors>true</CodeAnalysisTreatWarningsAsErrors>
 		<EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>
   </PropertyGroup>
+
+  <Target
+    Name="InstallGitPreCommitHook"
+    BeforeTargets="Build"
+    Condition="'$(DesignTimeBuild)' != 'true' AND Exists('$(MSBuildThisFileDirectory).git') AND Exists('$(MSBuildThisFileDirectory).githooks/pre-commit')">
+    <Copy
+      SourceFiles="$(MSBuildThisFileDirectory).githooks/pre-commit"
+      DestinationFiles="$(MSBuildThisFileDirectory).git/hooks/pre-commit"
+      SkipUnchangedFiles="true" />
+    <Exec
+      Command="chmod +x &quot;$(MSBuildThisFileDirectory).git/hooks/pre-commit&quot;"
+      Condition="'$(OS)' != 'Windows_NT'" />
+  </Target>
 </Project>

@@ -1,0 +1,11 @@
+#!/bin/sh
+set -eu
+cd "$(git rev-parse --show-toplevel)"
+
+for project in \
+  tests/Domain.Tests/Domain.Tests.csproj \
+  tests/Application.Tests/Application.Tests.csproj \
+  tests/Infrastructure.Tests/Infrastructure.Tests.csproj
+do
+  dotnet test "$project" --nologo --verbosity minimal
+done
