@@ -9,5 +9,6 @@
   <Folder Name="/src/Workers/">
     <Project Path="src/Workers/FileProcessor/FileProcessor.csproj" />
     <Project Path="src/Workers/Migrations/Migrations.csproj" />
+    <Project Path="src/Workers/Scheduler/Scheduler.csproj" />
   </Folder>
 </Solution>
