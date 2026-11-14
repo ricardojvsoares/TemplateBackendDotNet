@@ -1,7 +1,9 @@
-using ErrorOr;
+using System.Text.Json.Serialization;
 using Application.Features.Users.Commands.CreateUser;
-using WebApi.Extensions;
+using ErrorOr;
 using Microsoft.AspNetCore.Mvc;
+using WebApi.Extensions;
+using WebApi.Json;
 using Wolverine;
 using Domain.Features.Users;
 
@@ -14,21 +16,48 @@ internal static class CreateUserEndpoint
         app.MapPost(
             "/",
             async (
-                [FromBody] CreateUserCommand command,
+                [FromBody] CreateUserRequest request,
                 [FromServices] IMessageBus bus,
                 CancellationToken cancellationToken) =>
             {
                 ErrorOr<CreateUserResponse> result =
                     await bus.InvokeAsync<ErrorOr<CreateUserResponse>>(
-                        command,
+                        request.ToCommand(),
                         cancellationToken);
 
-                return result.ToResult();
+                return result.ToCreatedResult();
             })
             .WithSummary("Create User")
             .WithName("CreateUser")
             .Produces<CreateUserResponse>(StatusCodes.Status201Created)
             .ProducesValidationProblem()
-            .RequireAuthorization(UserPolicies.Create);
+            .ProducesProblem(StatusCodes.Status409Conflict)
+            .RequirePermission(UserPolicies.Create);
     }
+}
+
+internal sealed class CreateUserRequest
+{
+    public string FirstName { get; init; } = string.Empty;
+
+    public string LastName { get; init; } = string.Empty;
+
+    public string Email { get; init; } = string.Empty;
+
+    public string Password { get; init; } = string.Empty;
+
+    [JsonConverter(typeof(OptionalStringJsonConverter))]
+    public OptionalString GlobalRole { get; init; }
+
+    public IReadOnlyList<string>? Permissions { get; init; }
+
+    public CreateUserCommand ToCommand() =>
+        new(
+            FirstName,
+            LastName,
+            Email,
+            Password,
+            GlobalRole.IsSpecified,
+            GlobalRole.Value,
+            Permissions);
 }

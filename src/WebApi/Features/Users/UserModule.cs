@@ -13,5 +13,9 @@ public sealed class UserModule : ICarterModule
         RouteGroupBuilder group = app.MapApiGroup(RoutePrefix);
 
         CreateUserEndpoint.Map(group);
+        UpdateUserEndpoint.Map(group);
+        SetUserAccessEndpoint.Map(group);
+        UpdateUserPasswordEndpoint.Map(group);
+        DeleteUserEndpoint.Map(group);
     }
 }

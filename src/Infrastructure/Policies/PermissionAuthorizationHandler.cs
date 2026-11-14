@@ -1,4 +1,4 @@
-using System.Security.Claims;
+using Application.Abstractions.Identity;
 using Microsoft.AspNetCore.Authorization;
 
 namespace Infrastructure.Policies;
@@ -9,7 +9,7 @@ internal sealed class PermissionAuthorizationHandler : AuthorizationHandler<Perm
         AuthorizationHandlerContext context,
         PermissionRequirement requirement)
     {
-        if (context.User.HasClaim(ClaimTypes.Role, requirement.Permission))
+        if (context.User.IsInRole(requirement.Permission))
         {
             context.Succeed(requirement);
         }

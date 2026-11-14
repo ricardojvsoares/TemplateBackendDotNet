@@ -25,6 +25,23 @@ services:
       timeout: 5s
       retries: 5
 
+  redis:
+    container_name: app-redis
+    image: redis:8
+    restart: unless-stopped
+    command: ["redis-server", "--requirepass", "${REDIS_PASSWORD}"]
+    environment:
+      REDISCLI_AUTH: ${REDIS_PASSWORD}
+    ports:
+      - "${REDIS_PORT}:6379"
+    networks:
+      - app-net
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
   rabbit:
     container_name: app-rabbitmq
     image: rabbitmq:4.4.0-management
@@ -92,21 +109,22 @@ services:
       - RABBITMQ_USERNAME=${RABBITMQ_USERNAME}
       - RABBITMQ_PASSWORD=${RABBITMQ_PASSWORD}
 
-      - KEYCLOAK_AUTHORITY=${KEYCLOAK_AUTHORITY}
-      - KEYCLOAK_ISSUER=${KEYCLOAK_ISSUER}
-      - KEYCLOAK_AUDIENCE=${KEYCLOAK_AUDIENCE}
-      - KEYCLOAK_CLIENT_ID=${KEYCLOAK_CLIENT_ID}
-      - KEYCLOAK_METADATA_ADDRESS=${KEYCLOAK_METADATA_ADDRESS}
-      - KEYCLOAK_REQUIRE_HTTPS_METADATA=${KEYCLOAK_REQUIRE_HTTPS_METADATA}
-      - KEYCLOAK_ADMIN_CLIENT_ID=${KEYCLOAK_ADMIN_CLIENT_ID}
-      - KEYCLOAK_ADMIN_CLIENT_SECRET=${KEYCLOAK_ADMIN_CLIENT_SECRET}
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - REDIS_PASSWORD=${REDIS_PASSWORD}
 
-      - SMTP_HOST=${SMTP_HOST}
-      - SMTP_PORT=${SMTP_PORT}
-      - SMTP_SECURE=${SMTP_SECURE}
-      - SMTP_USER=${SMTP_USER}
-      - SMTP_PASS=${SMTP_PASS}
-      - SMTP_FROM=${SMTP_FROM}
+      - AUTH_ISSUER=${AUTH_ISSUER}
+      - AUTH_AUDIENCE=${AUTH_AUDIENCE}
+      - AUTH_SIGNING_KEY=${AUTH_SIGNING_KEY}
+      - AUTH_ACCESS_TOKEN_MINUTES=${AUTH_ACCESS_TOKEN_MINUTES}
+      - AUTH_REFRESH_TOKEN_DAYS=${AUTH_REFRESH_TOKEN_DAYS}
+      - AUTH_ADMIN_EMAIL=${AUTH_ADMIN_EMAIL}
+      - AUTH_ADMIN_PASSWORD=${AUTH_ADMIN_PASSWORD}
+      - AUTH_ADMIN_FIRST_NAME=${AUTH_ADMIN_FIRST_NAME}
+      - AUTH_ADMIN_LAST_NAME=${AUTH_ADMIN_LAST_NAME}
+
+      - RESEND_API_KEY=${RESEND_API_KEY}
+      - RESEND_FROM=${RESEND_FROM}
     ports:
       - "5000:8080"
     networks:
@@ -117,6 +135,8 @@ services:
       rabbit:
         condition: service_healthy
       storage:
+        condition: service_healthy
+      redis:
         condition: service_healthy
 
   file-processor:
@@ -143,6 +163,33 @@ services:
       rabbit:
         condition: service_healthy
       storage:
+        condition: service_healthy
+
+  scheduler:
+    container_name: app-scheduler
+    build:
+      context: .
+      dockerfile: src/Workers/Dockerfile
+      args:
+        WORKER: Scheduler
+    restart: unless-stopped
+    environment:
+      - POSTGRES_HOST=db
+      - POSTGRES_PORT=5432
+      - POSTGRES_DATABASE=${POSTGRES_DATABASE}
+      - POSTGRES_USERNAME=${POSTGRES_USERNAME}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - REDIS_PASSWORD=${REDIS_PASSWORD}
+    networks:
+      - app-net
+    depends_on:
+      migrator:
+        condition: service_completed_successfully
+      db:
+        condition: service_healthy
+      redis:
         condition: service_healthy
 
   migrator:

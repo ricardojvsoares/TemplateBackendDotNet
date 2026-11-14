@@ -1,5 +1,5 @@
-using System.Net;
-using System.Net.Mail;
+using System.Net.Http.Headers;
+using System.Net.Http.Json;
 using System.Net.Mime;
 using Application.Abstractions.Mail;
 using Application.Settings;
@@ -9,6 +9,7 @@ using Microsoft.Extensions.Options;
 namespace Infrastructure.Services.Mail;
 
 public sealed class MailService(
+    ResendHttpClient httpClient,
     ILogger<MailService> logger,
     IOptions<MailServiceSettings> options)
     : IMailService
@@ -28,59 +29,57 @@ public sealed class MailService(
             throw new InvalidOperationException("At least one To recipient is required.");
         }
 
-        using var message = new MailMessage
+        var payload = new Dictionary<string, object>
         {
-            From = new MailAddress(_settings.From),
-            Subject = subject,
-            Body = body,
-            IsBodyHtml = false,
+            ["from"] = _settings.From,
+            ["to"] = recipients,
+            ["subject"] = subject,
+            ["text"] = body
         };
 
-        foreach (string address in recipients)
+        if (cc is { Count: > 0 })
         {
-            message.To.Add(address);
+            payload["cc"] = cc;
         }
 
-        if (cc is not null)
+        if (attachments is { Count: > 0 })
         {
-            foreach (string address in cc)
-            {
-                message.CC.Add(address);
-            }
+            payload["attachments"] = attachments.Select(ToAttachment).ToArray();
         }
 
-        if (attachments is not null)
+        using var request = new HttpRequestMessage(HttpMethod.Post, "emails")
         {
-            foreach (EmailAttachment attachment in attachments)
-            {
-                var stream = new MemoryStream(attachment.Content.ToArray(), writable: false);
-                message.Attachments.Add(new Attachment(
-                    stream,
-                    attachment.FileName,
-                    string.IsNullOrWhiteSpace(attachment.ContentType)
-                        ? MediaTypeNames.Application.Octet
-                        : attachment.ContentType));
-            }
-        }
-
-        using var client = new SmtpClient(_settings.Host, _settings.Port)
-        {
-            EnableSsl = true,
-            DeliveryMethod = SmtpDeliveryMethod.Network,
+            Content = JsonContent.Create(payload)
         };
+        request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", _settings.ApiKey);
 
-        if (!string.IsNullOrWhiteSpace(_settings.User))
+        using HttpResponseMessage response = await httpClient.SendAsync(request, cancellationToken);
+        if (!response.IsSuccessStatusCode)
         {
-            client.Credentials = new NetworkCredential(_settings.User, _settings.Password);
+            int status = (int)response.StatusCode;
+            logger.LogError(
+                "Resend rejected email '{Subject}' with status {StatusCode}",
+                subject,
+                status);
+            throw new InvalidOperationException($"Resend rejected the email with status {status}.");
         }
-
-        cancellationToken.ThrowIfCancellationRequested();
-        await client.SendMailAsync(message, cancellationToken);
 
         logger.LogInformation(
             "Sent email '{Subject}' to {ToCount} recipient(s) with {AttachmentCount} attachment(s)",
             subject,
             recipients.Count,
             attachments?.Count ?? 0);
+    }
+
+    private static Dictionary<string, string> ToAttachment(EmailAttachment attachment)
+    {
+        return new Dictionary<string, string>
+        {
+            ["filename"] = attachment.FileName,
+            ["content"] = Convert.ToBase64String(attachment.Content.Span),
+            ["content_type"] = string.IsNullOrWhiteSpace(attachment.ContentType)
+                ? MediaTypeNames.Application.Octet
+                : attachment.ContentType
+        };
     }
 }

@@ -1,3 +1,4 @@
+using Application.Abstractions.Identity;
 using Asp.Versioning;
 using Infrastructure;
 using Persistence;
@@ -5,8 +6,9 @@ using Application;
 using Serilog;
 using Scalar.AspNetCore;
 using Carter;
+using Microsoft.Extensions.DependencyInjection;
 
-DotNetEnv.Env.TraversePath().Load();
+DotNetEnv.Env.NoClobber().TraversePath().Load();
 var builder = WebApplication.CreateBuilder(args);
 
 
@@ -53,11 +55,28 @@ if (app.Environment.IsDevelopment())
     });
 }
 
-app.UseHttpsRedirection();
+if (!string.IsNullOrEmpty(builder.Configuration["ASPNETCORE_HTTPS_PORTS"])
+    || !string.IsNullOrEmpty(builder.Configuration["HTTPS_PORT"]))
+{
+    app.UseHttpsRedirection();
+}
 
 app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapCarter();
 
+await using (AsyncServiceScope scope = app.Services.CreateAsyncScope())
+{
+    IAdminSeeder seeder = scope.ServiceProvider.GetRequiredService<IAdminSeeder>();
+    await seeder.SeedAsync();
+}
+
 await app.RunAsync();
+
+public partial class Program
+{
+    protected Program()
+    {
+    }
+}

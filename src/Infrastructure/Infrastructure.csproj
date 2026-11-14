@@ -4,7 +4,12 @@
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="AWSSDK.S3" />
+    <PackageReference Include="Cronos" />
     <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" />
+    <PackageReference Include="Microsoft.Extensions.Identity.Core">
+      <NoWarn>NU1510</NoWarn>
+    </PackageReference>
+    <PackageReference Include="StackExchange.Redis" />
     <PackageReference Include="WolverineFx.RabbitMQ" />
   </ItemGroup>
   <ItemGroup>

@@ -6,6 +6,9 @@
     <Project Path="src/Persistence/Persistence.csproj" />
     <Project Path="src/WebApi/WebApi.csproj" />
   </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/WebApi.Tests/WebApi.Tests.csproj" />
+  </Folder>
   <Folder Name="/src/Workers/">
     <Project Path="src/Workers/FileProcessor/FileProcessor.csproj" />
     <Project Path="src/Workers/Migrations/Migrations.csproj" />

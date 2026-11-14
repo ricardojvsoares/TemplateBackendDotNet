@@ -2,7 +2,7 @@ using System.Reflection;
 using DbUp;
 using Npgsql;
 
-DotNetEnv.Env.TraversePath().Load();
+DotNetEnv.Env.NoClobber().TraversePath().Load();
 
 var cs = new NpgsqlConnectionStringBuilder
 {
@@ -11,6 +11,7 @@ var cs = new NpgsqlConnectionStringBuilder
     Database = Environment.GetEnvironmentVariable("POSTGRES_DATABASE"),
     Username = Environment.GetEnvironmentVariable("POSTGRES_USERNAME"),
     Password = Environment.GetEnvironmentVariable("POSTGRES_PASSWORD"),
+    GssEncryptionMode = GssEncryptionMode.Disable,
 }.ConnectionString;
 
 EnsureDatabase.For.PostgresqlDatabase(cs);

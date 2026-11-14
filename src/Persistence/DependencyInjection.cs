@@ -1,5 +1,6 @@
 using Application.Abstractions.Data;
 using Application.Settings;
+using Dapper;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
@@ -13,6 +14,10 @@ public static class DependencyInjection
 {
     public static IServiceCollection AddPersistence(this IServiceCollection services)
     {
+        SqlMapper.RemoveTypeMap(typeof(DateTime));
+        SqlMapper.AddTypeHandler(new UtcTimestampHandler());
+
+        DefaultTypeMap.MatchNamesWithUnderscores = true;
 
         services.AddScoped<IDatabaseService, DatabaseService>();
 
@@ -53,7 +58,8 @@ public static class DependencyInjection
                 Port = settings.Port,
                 Database = settings.Database,
                 Username = settings.Username,
-                Password = settings.Password
+                Password = settings.Password,
+                GssEncryptionMode = GssEncryptionMode.Disable
             };
 
             return NpgsqlDataSource.Create(connectionString.ConnectionString);

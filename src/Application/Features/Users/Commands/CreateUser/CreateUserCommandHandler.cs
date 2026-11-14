@@ -1,9 +1,7 @@
 using Application.Abstractions.Identity;
-using Application.Abstractions.Identity.Keycloak;
-using Application.Abstractions.Identity.Keycloak.Users.Requests;
+using Domain.Authorization;
 using Domain.Features.Users;
 using ErrorOr;
-using Microsoft.Extensions.Logging;
 
 namespace Application.Features.Users.Commands.CreateUser;
 
@@ -13,89 +11,74 @@ public static class CreateUserCommandHandler
         CreateUserCommand command,
         IUserContext userContext,
         IUserRepository repository,
-        IKeycloakAdminUsersService keycloakUsers,
-        ILogger<CreateUserCommand> logger,
+        IPasswordHasher passwords,
         CancellationToken cancellationToken)
     {
-        if (string.IsNullOrWhiteSpace(command.FirstName)
-            || string.IsNullOrWhiteSpace(command.LastName)
-            || string.IsNullOrWhiteSpace(command.Email))
+        ErrorOr<Success> profile = UserRules.ValidateProfile(
+            command.FirstName,
+            command.LastName,
+            command.Email);
+
+        if (profile.IsError)
         {
-            return Error.Validation(
-                code: "User.InvalidData",
-                description: "First name, last name and email are required.");
+            return profile.Errors;
         }
 
-        string email = command.Email.Trim();
-
-        ErrorOr<Success> existsByEmail = await repository.ExistsByEmailAsync(email, cancellationToken);
-
-        if (existsByEmail.IsError)
+        ErrorOr<Success> password = UserRules.ValidatePassword(command.Password);
+        if (password.IsError)
         {
-            return existsByEmail.Errors;
+            return password.Errors;
         }
 
-        ErrorOr<Created> keycloakUser = await keycloakUsers.CreateAsync(
-            new CreateKeycloakUserRequest
+        string? globalRole;
+        if (!command.HasGlobalRole)
+        {
+            globalRole = GlobalRoles.Viewer;
+        }
+        else
+        {
+            ErrorOr<GlobalRoleSelection> parsedRole = UserRules.ValidateGlobalRole(command.GlobalRole);
+            if (parsedRole.IsError)
             {
-                Username = email,
-                Email = email,
-                FirstName = command.FirstName.Trim(),
-                LastName = command.LastName.Trim()
-            },
-            cancellationToken);
+                return parsedRole.Errors;
+            }
 
-        if (keycloakUser.IsError)
-        {
-            return keycloakUser.Errors;
+            globalRole = parsedRole.Value.Role;
         }
 
-        var user = User.Create(
+        ErrorOr<string[]> permissions = UserRules.ValidatePermissions(command.Permissions);
+        if (permissions.IsError)
+        {
+            return permissions.Errors;
+        }
+
+        string email = UserRules.NormalizeEmail(command.Email);
+        ErrorOr<User> existing = await repository.GetByEmailAsync(email, cancellationToken);
+        if (!existing.IsError)
+        {
+            return UserErrors.AlreadyExists(email);
+        }
+
+        if (existing.FirstError.Type != ErrorType.NotFound)
+        {
+            return existing.Errors;
+        }
+
+        User user = User.Create(
             command.FirstName.Trim(),
             command.LastName.Trim(),
             email,
+            passwords.Hash(command.Password),
+            globalRole,
+            permissions.Value,
             userContext.UserId);
 
-        ErrorOr<Guid> createUserResult = await repository.CreateAsync(user, cancellationToken);
-
-        if (createUserResult.IsError)
+        ErrorOr<Guid> created = await repository.CreateAsync(user, cancellationToken);
+        if (created.IsError)
         {
-            await RollbackKeycloakUserAsync(keycloakUsers, email, logger, cancellationToken);
-
-            return createUserResult.Errors;
+            return created.Errors;
         }
 
-        ErrorOr<Success> reset = await keycloakUsers.ResetPasswordAsync(
-            new ResetKeycloakUserPasswordRequest { UserEmail = email },
-            cancellationToken);
-
-        if (reset.IsError)
-        {
-            logger.LogWarning(
-                "User {UserId} was created but the set-password email could not be sent: {Errors}",
-                createUserResult.Value,
-                reset.Errors);
-        }
-
-        return new CreateUserResponse(createUserResult.Value);
-    }
-
-    private static async Task RollbackKeycloakUserAsync(
-        IKeycloakAdminUsersService keycloakUsers,
-        string email,
-        ILogger logger,
-        CancellationToken cancellationToken)
-    {
-        ErrorOr<Deleted> rollback = await keycloakUsers.DeleteAsync(
-            new DeleteKeycloakUserRequest { UserEmail = email },
-            cancellationToken);
-
-        if (rollback.IsError)
-        {
-            logger.LogError(
-                "Could not remove Keycloak user for {Email} after a failed database insert: {Errors}",
-                email,
-                rollback.Errors);
-        }
+        return new CreateUserResponse(created.Value);
     }
 }
